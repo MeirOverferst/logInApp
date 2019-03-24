@@ -1,28 +1,68 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import Form from './components/Form';
+import UserPage from './components/User';
+import Logout from './components/Logout';
+import { BrowserRouter, Route, Redirect, Switch } from 'react-router-dom';
 
-class App extends Component {
+export default class App extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {userName: '', password: '', hasFailed: false, isAuth: false}
+    this.changeFormField = this.changeFormField.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.unauthorize = this.unauthorize.bind(this);
+    this.resetFields = this.resetFields.bind(this);
+  }
+
+  changeFormField(event) {
+    switch(event.target.getAttribute('ident')) {
+      case 'usr':
+        this.setState({userName: event.target.value});
+        break;
+      case 'pwd':
+        this.setState({password: event.target.value});
+        break;
+    }
+  }
+
+  handleSubmit(event) {
+    event.preventDefault();
+    if (this.state.userName === 'Meir' && this.state.password === '5555') {
+      this.setState({hasFailed: false, isAuth: true});
+    } else {
+      this.setState({hasFailed: true});
+    }
+  }
+
+  unauthorize() {
+    this.setState({isAuth: false});
+  }
+
+  resetFields() {
+    this.setState({userName: '', password: ''});
+  }
+
   render() {
+    const formProps = {
+      userName: this.state.userName,
+      password: this.state.password,
+      handleChange: this.changeFormField,
+      handleSubmit:this.handleSubmit,
+      hasFailed: this.state.hasFailed
+    }
+
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
-    );
+      <BrowserRouter>
+        <>
+          <Route exact path="/" render={() => <Form formProps={ formProps } />} />
+          <Switch>
+            <Route path="/logout" render={() => <Logout resetFields={this.resetFields}/>} />
+            <Route path="/user" render={() => <UserPage unauthorize={this.unauthorize} userName={this.state.userName}/>} />
+            {this.state.isAuth && <Redirect to="/user" />}
+          </Switch>
+        </>
+      </BrowserRouter>
+    )
   }
 }
 
-export default App;
